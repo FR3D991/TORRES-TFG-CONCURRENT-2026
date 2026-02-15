@@ -1,0 +1,20 @@
+# -----------------------------------------------------------------------------
+# PROJECT DEPENDENCIES (requirements.txt)
+# Instructions: Install all libraries using 'pip install -r requirements.txt' (-r means recursive --> Install all the list in requirements.exe)
+# Note: >= indicates the minimum required version for compatibility.
+# -----------------------------------------------------------------------------
+
+#Modern, fast (high-performance), web framework for building APIs with Python base on standard Python type hints
+fastapi>=0.100.0 
+
+#The ASGI server (Asynchronous Server Gateway Interface), designed for high-performance asynchronous applications such as FastAPI.
+uvicorn[standard]>=0.23.0 
+
+#Popular Python library for data validation and settings managment that enforces type hints and runtime.
+pydantic>=2.0.0 
+
+#Python library that simplifies the managment of environment variables, it helps to read files such as [.env] (security to avoid upload keys to GitHub).
+python-dotenv>=1.0.0 
+
+#HTTPX is a fully featured HTTP client library for making asynchronous requests to external APIs ([request] will block the server and we need concurrence).
+httpx>=0.24.0 
