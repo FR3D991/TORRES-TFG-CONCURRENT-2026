@@ -13,8 +13,8 @@ from dotenv import load_dotenv
 load_dotenv() #Load .env variables (API Keys)
 
 app = FastAPI(
-    title="Creació d'una arquitectura web per fer consultes concurrents a ChatGpt, DeepSeek i LlaMa"
-    description="Backend dissenyat per fer consultes a ChatGPT, DeepSeek i Llama simultàniament, tot plegat per veure respostes i comparar"
+    title="Creació d'una arquitectura web per fer consultes concurrents a ChatGpt, DeepSeek i LlaMa",
+    description="Backend dissenyat per fer consultes a ChatGPT, DeepSeek i Llama simultàniament, tot plegat per veure respostes i comparar",
     version="0.1.0"
 )
 
@@ -60,7 +60,7 @@ async def call_llm_service(model_name: str, prompt: str) -> ModelResponse:
 
     return ModelResponse(
         model_name=model_name,
-        response_text=f"[{model_name}] Resposta simulada a: '{prompt[:30]}...'. Això es una proba del BACKEND"
+        response_text=f"[{model_name}] Resposta simulada a: '{prompt[:30]}...'. Això es una prova del BACKEND",
         latency=round(delay,3),
         token_count=len(prompt.split())+20 #IA coin. Simple estimation, tokens = words or fragments words
     )
@@ -71,8 +71,17 @@ async def call_llm_service(model_name: str, prompt: str) -> ModelResponse:
 def read_root():
     return{"status": "onLine", "project": "TFG Enginyeria Telecomunicacions", "env": os.getenv("ENV")} #Health endpoint to verify that the server works correctly
 
-@app.post("/generate", response_model=list[ModelResponse])
+@app.post("/generate", response_model=list[ModelResponse]) #Receive the prompt and post answers asynchronous to the LLMs
 async def generate_response(request: QueryRequest):
     try:
-        tasks = []
-        for model in request
+        tasks = [] #All the taks at the same time instead of doing one by one
+
+        for model in request.models:
+            tasks.append(call_llm_service(model, request.prompt))#Add to tasks list (Mock)
+        
+        results = await asyncio.gather(*tasks)
+
+        return results
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
