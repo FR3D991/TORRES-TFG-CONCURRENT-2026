@@ -5,7 +5,7 @@
 ---
 
 ## Introduction
-This project addresses the need to streamline interacionts with multiple Large Language Models (LLMs) simultaneously. **The main goal is to design and build a web architecture capable of handling concurrent queries, enabling real-time technical comparison regarding latency, response quality, and resource usage.**
+This project addresses the need to streamline interacionts with multiple Large Language Models (LLMs) simultaneously. **The main goal is to design and build a web architecture capable of handling concurrent queries, enabling real-time technical comparison regarding latency, response quality and resource usage, all together to raise awareness with this new technologies.**
 
 ## Technical Objectives
 - **Asynchronous Architecture:** Implementing a backend using **FastAPI** and `asyncio` to minimize total wait times when executing parallel API requests.
@@ -25,4 +25,4 @@ This project addresses the need to streamline interacionts with multiple Large L
 - `/docs`: Technical documentation and architecture diagrams.
 
 ---
-*Author: Freddy Joel Torres Cabrera* *Tutor: Maria Dolors Royo Vallés* *Delivery date (deposit): 08/07/2026*
+*Author: Freddy Joel Torres Cabrera* / *Tutor: Maria Dolors Royo Vallés* / *Delivery date (deposit): 08/07/2026*

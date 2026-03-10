@@ -15,7 +15,7 @@ load_dotenv() #Load .env variables (API Keys)
 app = FastAPI(
     title="Creació d'una arquitectura web per fer consultes concurrents a ChatGpt, DeepSeek i LlaMa",
     description="Backend dissenyat per fer consultes a ChatGPT, DeepSeek i Llama simultàniament, tot plegat per veure respostes i comparar",
-    version="0.1.0"
+    version="0.1.1"
 )
 
 app.add_middleware( #Allows the communication
@@ -60,7 +60,7 @@ async def call_llm_service(model_name: str, prompt: str) -> ModelResponse:
 
     return ModelResponse(
         model_name=model_name,
-        response_text=f"[{model_name}] Resposta simulada a: '{prompt[:30]}...'. Això es una prova del BACKEND",
+        response_text=f"[{model_name}] A partir del prompt: '{prompt[:30]}...' ha creat una resposta, això es una prova del BACKEND, a continuació veurem parametres importants",
         latency=round(delay,3),
         token_count=len(prompt.split())+20 #IA coin. Simple estimation, tokens = words or fragments words
     )
@@ -69,7 +69,7 @@ async def call_llm_service(model_name: str, prompt: str) -> ModelResponse:
 #ENDPOINT
 @app.get("/")
 def read_root():
-    return{"status": "onLine", "project": "TFG Enginyeria Telecomunicacions", "env": os.getenv("ENV")} #Health endpoint to verify that the server works correctly
+    return{"Status": "ONLINE", "project": "TFG Enginyeria Telecomunicacions - CREACIÓ D'APLICACIÓ WEB CONCURRENT PER FER CONSULTES A CHATGPT, DEEPSEEK I LLAMA3", "env": os.getenv("ENV")} #Health endpoint to verify that the server works correctly
 
 @app.post("/generate", response_model=list[ModelResponse]) #Receive the prompt and post answers asynchronous to the LLMs
 async def generate_response(request: QueryRequest):
