@@ -27,5 +27,5 @@ The key is that it translates raw JSON data from the API into text columns and i
 
 - Requests: HTTP petitions that allows JSON to send information to the Backend:
     https://requests.readthedocs.io/en/latest/
-
+a
 
