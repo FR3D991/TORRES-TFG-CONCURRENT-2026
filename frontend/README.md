@@ -12,5 +12,20 @@ The key is that it translates raw JSON data from the API into text columns and i
 ## Key Technical Features
 - UI Framework: **Streamlit** chosen for its rapid prototyping capabilities and native Python integration.
 - Synchronous to Asynchronous Bridge: Uses the `requests` library to send POST for the FastAPI backend. It implements `st.spinner` to provide visual feedback and manage user experience during the concurrent waiting times.
-- Data Validation: **Pydantic** models such as `QueryRequest` and `ModelResponse`to ensure stric typing for inputs and outputs.
-- Mocking Layer (Current Status): To validate that the BackEnd works propertly without API costs, the system currently runs in "Simulation Mode". It generates synthetic time response and token counts using `random.uniform()` to simulate real-world network conditions.
+- Dynamic Grid Layout: Implements `st.columns` to dynamically render response side-by-side, adapting to the exact number of models selected by the user.
+- Data visualization: Integrates `pandas` dataframes and `st.bar_chart` to instantly plot simulated Time to First Token ($TTFT$) comparisons once the backend resolves the parallel requests.
+
+---
+
+## Bibliography
+
+- Stramlit: Principal Framework (`st`):
+    https://docs.streamlit.io (https://docs.streamlit.io/develop/api-reference/layout --> Information Layout)
+
+- Pandas: Graphic data structure in a matritial form to allows Streamlit understand:
+    https://pandas.pydata.org/docs/
+
+- Requests: HTTP petitions that allows JSON to send information to the Backend:
+    https://requests.readthedocs.io/en/latest/
+
+
