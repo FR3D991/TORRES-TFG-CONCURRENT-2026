@@ -5,10 +5,10 @@ import pandas as pd
 # FRONTEND configuration
 st.set_page_config(page_title="TFG: Sistema d'Auditoria Telemàtica LLMs", layout="wide")
 
-st.title("Arquitectura de Consultes Concurrents a Intel·ligències Artificials")
+st.title("Creació d'una arquitectura web per fer consultes concurrents a ChatGpt, DeepSeek i LlaMa")
 st.subheader("Plataforma de Monitorització: Auditoria Concurrent i Mode Explotació")
 
-# --- SESSION STATE ---
+# -SESSION STATE
 if "messages" not in st.session_state:
     st.session_state.messages = []
 if "telemetry_history" not in st.session_state:
@@ -22,7 +22,7 @@ if "is_processing" not in st.session_state:
 
 chat_active = len(st.session_state.messages) > 0
 
-# CACHE with time to live 12 hours
+# -CACHE with time to live 12 hours
 @st.cache_data(show_spinner=False, ttl=43200)
 def fetch_telemetric_data(prompt, models_list):
     payload = {"prompt": prompt, "models": models_list}
@@ -30,7 +30,7 @@ def fetch_telemetric_data(prompt, models_list):
     response.raise_for_status()
     return response.json()
 
-# LLMs models
+# -LLMs models
 cataleig_models = [
     "Llama 3 (Local - Meta)",
     "DeepSeek Coder (Local)",
@@ -42,25 +42,25 @@ cataleig_models = [
     "Gemini 1.5 Pro (Google)"
 ]
 
-# --- CREACIÓ DE LES 3 PESTANYES ---
+# -3 tabs for the interface
 tab1, tab2, tab3 = st.tabs([
-    "📊 Fase 1: Auditoria Concurrent", 
-    "💬 Fase 2: Mode Explotació", 
-    "🏗️ Documentació i Arquitectura"
+    "Fase 1: Auditoria Concurrent", 
+    "Fase 2: Mode Explotació", 
+    "Fase 3: Documentació i Arquitectura"
 ])
 
 # ==========================================
-# PESTANYA 1: AUDITORIA CONCURRENT
+# TAB 1
 # ==========================================
 with tab1:
-    st.markdown("### Banc de Proves Telemàtic")
+    st.markdown("### Banc de Proves Concurrent")
     if chat_active:
-        st.error("🔒 **Bloqueig per Seguretat (Prevenció OOM):** Hi ha un xat actiu a la Fase 2. Reinicia la sessió per fer nous Benchmarks.")
+        st.error("**Bloqueig per Seguretat (Prevenció OOM):** Out Of Memory. Hi ha un xat actiu a la Fase 2. Reinicia la sessió i neteja la memòria per poder fer nous Benchmarks.")
     else:
         st.caption("Avaluació comparativa de latències en entorns concurrents.")
     
     with st.container():
-        query = st.text_area("Introdueix la consulta:", placeholder="Ex: Antenes YAGI...", disabled=st.session_state.is_processing or chat_active)
+        query = st.text_area("Introdueix la consulta:", placeholder="Ex: Explica'm les Antenes YAGI...", disabled=st.session_state.is_processing or chat_active)
         selected_models = st.multiselect("Models:", cataleig_models, default=["Llama 3 (Local - Meta)", "ChatGPT-3.5 Turbo (OpenAI)"], disabled=st.session_state.is_processing or chat_active)
 
         col_btn, col_unlock = st.columns([1, 3])
@@ -68,7 +68,7 @@ with tab1:
             enviar = st.button("Realitzar consulta", type="primary", disabled=st.session_state.is_processing or chat_active)
         with col_unlock:
             if st.session_state.is_processing:
-                if st.button("⚠️ Forçar Desbloqueig"):
+                if st.button("Forçar Desbloqueig"):
                     st.session_state.is_processing = False
                     st.rerun()
 
@@ -80,9 +80,9 @@ with tab1:
         else:
             st.session_state.is_processing = True
             with st.status(f"Iniciant auditoria per a {len(selected_models)} models...", expanded=True) as status:
-                st.write("📡 Obrint sockets i fluxos TCP...")
+                st.write("Realitzant les consultes...")
                 for model in selected_models:
-                    st.write(f"{'⚙️' if 'Local' in model else '☁️'} **{model}**: Preparant inferència...")
+                    st.write(f"{'[En Local] -' if 'Local' in model else '[Amb Cloud] -'} **{model}**: Preparant inferència...")
                 try:
                     st.session_state.audit_results = fetch_telemetric_data(query, selected_models)
                     status.update(label="Completat!", state="complete", expanded=False)
@@ -109,25 +109,43 @@ with tab1:
         with c3: st.bar_chart(df_metrics, x="Model", y="Volum (Tokens)")
 
 # ==========================================
-# PESTANYA 2: MODE EXPLOTACIÓ
+# TAB 2
 # ==========================================
+
 with tab2:
-    st.markdown("### Entorn d'Explotació")
+    st.markdown("### Entorn de Desplegament i Explotació de Model Únic")
+    
     if st.session_state.is_processing:
-        st.error("🔒 Sistema bloquejat per auditoria a la Fase 1.")
+        st.error("**Sistema Bloquejat:** L'arquitectura està processant actualment consultes concurrents massives a la Fase 1. Si us plau, espera que l'auditoria finalitzi per evitar la saturació del bus del sistema.")
     else:
-        selected_chat_model = st.selectbox("Model d'explotació:", cataleig_models)
-        if st.button("Reiniciar Sessió"):
-            st.session_state.messages, st.session_state.telemetry_history, st.session_state.turn_counter = [], [], 0
+        st.caption("Un cop analitzades les mètriques de la Fase 1, selecciona el model òptim per iniciar una sessió interactiva. L'arquitectura monitoritzarà la degradació del rendiment telemàtic.")
+
+        def dades_reset_callback():
+            st.session_state.messages = []
+            st.session_state.telemetry_history = []
+            st.session_state.turn_counter = 0
+
+        selected_chat_model = st.selectbox(
+            "Escull el model d'explotació:", 
+            cataleig_models,
+            key="selector_model_actiu",
+            on_change=dades_reset_callback
+        )
+        
+        if st.button("Reiniciar Sessió i Netejar Memòria"):
+            st.session_state.messages = []
+            st.session_state.telemetry_history = []
+            st.session_state.turn_counter = 0
             st.rerun()
 
         st.divider()
-        c_chat, c_tele = st.columns([2, 1])
 
+        c_chat, c_telemetry = st.columns([2, 1])
+        
         with c_chat:
             if len(st.session_state.messages) > 0 and st.session_state.messages[-1]["role"] == "user":
                 st.session_state.messages.pop()
-                st.warning("⚠️ Connexió interrompuda detectada.")
+                st.warning("Connexió interrompuda detectada.")
             
             chat_box = st.container(height=500)
             with chat_box:
@@ -141,51 +159,58 @@ with tab2:
                     with st.chat_message("user"): st.write(q)
                     with st.chat_message("assistant"):
                         try:
-                            r = requests.post("http://127.0.0.1:8000/generate", json={"prompt": q, "models": [selected_chat_model]}).json()[0]
+                            response = requests.post("http://127.0.0.1:8000/generate", json={"prompt": q, "models": [selected_chat_model]})
+                            response.raise_for_status()
+                            r = response.json()[0]
+                            
                             st.write(r["response_text"])
                             st.session_state.messages.append({"role": "assistant", "content": r["response_text"]})
                             st.session_state.telemetry_history.append({"Torn": f"T {st.session_state.turn_counter}", "Latència Total (s)": r["latency"], "TTFT (s)": r["ttft"]})
                             st.rerun()
-                        except: st.error("Error de xarxa.")
-
-        with c_tele:
+                            
+                        except Exception as e:
+                            # Let's see the error Timeout (codi 500/504)
+                            st.error(f"Error de connexió amb el servidor: {e}")
+                            
+                            if st.session_state.messages[-1]["role"] == "user":
+                                st.session_state.messages.pop()
+                                st.session_state.turn_counter -= 1
+        with c_telemetry:
             if st.session_state.telemetry_history:
                 st.line_chart(pd.DataFrame(st.session_state.telemetry_history), x="Torn", y=["Latència Total (s)", "TTFT (s)"])
 
 # ==========================================
-# PESTANYA 3: DOCUMENTACIÓ I ARQUITECTURA
+# TAB 3
 # ==========================================
 with tab3:
-    st.markdown("## 🏗️ Detalls Tècnics de la Infraestructura")
+    st.markdown("## Detalls Tècnics de la Infraestructura")
     
     # 1. Informació del Projecte
     col1, col2 = st.columns(2)
     with col1:
-        st.info("### 👨‍💻 Autor i Projecte")
+        st.info("### Autor i Projecte")
         st.write("**Estudiant:** Freddy Joel Torres Cabrera")
         st.write("**Titulació:** Grau en Enginyeria de Sistemes de Telecomunicació (GRE ENG SIS TELECOMUN)")
         st.write("**Universitat:** UPC - EETAC (Escola d'Enginyeria de Telecomunicació i Aeroespacial de Castelldefels)")
-        st.write("**Directora:** Dolors Royo Vallés")
+        st.write("**Tutora i Supervisora:** Dolors Royo Vallés")
     
     with col2:
-        st.success("### 🚀 Versió del Programari")
-        st.write("**Versió Actual:** 4.1.0 (Release Candidate)")
+        st.success("### Versió del Programari")
+        st.write("**Versió Actual:** 3.1.0 (Release Candidate)")
         st.write("**Estat:** Prototip d'auditoria funcional")
         st.write("**Data de l'última compilació:** Juny 2026")
 
     st.divider()
 
-    # 2. Diagrama d'Arquitectura Professional (Càrrega d'Imatge)
-    st.markdown("### 🗺️ Diagrama de l'Arquitectura Telemàtica Concurrent")
+    # Diagram of the architecture
+    st.markdown("### Diagrama de l'Arquitectura Telemàtica Concurrent")
     st.caption("Aquest diagrama professional representa el flux de dades asíncron, dividint la infraestructura en topologies locals (Edge) i externes (Cloud) i mostrant com s'extrauen les mètriques telemàtiques.")
     st.image('arquitectura.png', use_container_width=True)
     
     st.divider()
 
-    # 3. Stack Tecnològic i Fórmula... (Resta del codi igual)
-
-    # 3. Stack Tecnològic
-    st.markdown("### 🛠️ Stack Tecnològic Utilitzat")
+    # Stack technology used 
+    st.markdown("### Stack Tecnològic Utilitzat")
     c1, c2, c3, c4 = st.columns(4)
     with c1:
         st.markdown("**Llenguatge**")
@@ -202,8 +227,8 @@ with tab3:
 
     st.divider()
 
-    # 4. Explicació de la Mètrica TTFT
-    st.markdown("### 📏 Mesura de la Mètrica TTFT (Time To First Token)")
+    # 4. Explication of the TTFT metric
+    st.markdown("### Mesura de la Mètrica TTFT (Time To First Token)")
     st.write("""
     Aquesta arquitectura utilitza una lectura de flux de dades (*streaming*) per detectar el moment exacte en què arriba el primer paquet de dades útil. 
     A nivell telemàtic, el **TTFT** es calcula com:
