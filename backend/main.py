@@ -1,4 +1,4 @@
-# -LIBRARIES, THIRD-PARTY FRAMEWORKS AND TOOLS
+# LIBRARIES, THIRD-PARTY FRAMEWORKS AND TOOLS
 import asyncio
 import os
 import random
@@ -11,13 +11,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
-# -INITIALIZATION
+# INITIALIZATION
 load_dotenv()
 
 app = FastAPI(
     title="Creació d'una arquitectura web per fer consultes concurrents a ChatGpt, DeepSeek i LlaMa",
     description="Backend asíncron per medició mètriques a diferents LLMs",
-    version="2.1.0"
+    version="3.1.1"
 )
 
 app.add_middleware(
@@ -28,7 +28,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# -REQUEST/RESPONSE MODELS
+# REQUEST/RESPONSE MODELS
 class QueryRequest(BaseModel):
     prompt: str
     models: list[str]
@@ -40,7 +40,7 @@ class ModelResponse(BaseModel):
     ttft: float          # Time To First Token
     token_count: int
 
-# -CORE FUNCTIONS (LLM HANDLERS)
+# CORE FUNCTIONS (LLM HANDLERS)
 async def call_mock_api(display_name: str, prompt: str, is_fallback: bool = False) -> ModelResponse:
     """Simula una crida a una API. Si actua com a Fallback (ERROR de clau), avisa l'usuari sobre el .env.example"""
     start_time = time.time()
@@ -103,8 +103,7 @@ async def call_ollama_model(model_id: str, display_name: str, prompt: str) -> Mo
 
 async def call_generic_cloud_api(model_id: str, display_name: str, prompt: str, env_key_name: str, base_url: str) -> ModelResponse:
     """
-    CLASSE/FUNCIÓ GENÈRICA: Permet integrar qualsevol proveïdor Cloud que utilitzi 
-    l'estàndard d'OpenAI (OpenAI, DeepSeek Cloud...).
+    CLASSE/FUNCIÓ GENÈRICA: Permet integrar qualsevol proveïdor Cloud que utilitzi l'estàndard d'OpenAI (OpenAI, DeepSeek Cloud...).
     Inclou Graceful Degradation (Tolerància a fallades si no hi ha clau).
     """
     api_key = os.getenv(env_key_name)
@@ -112,29 +111,60 @@ async def call_generic_cloud_api(model_id: str, display_name: str, prompt: str, 
         return await call_mock_api(display_name, prompt, is_fallback=True)
 
     start_time = time.time()
-    headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
-    payload = {"model": model_id, "messages": [{"role": "user", "content": prompt}], "stream": True}
-    
+    headers = {
+        "Authorization": f"Bearer {api_key}", 
+        "Content-Type": "application/json",
+        "HTTP-Referer": "http://localhost:8501", 
+        "X-Title": "TFG_Arquitectura_Concurrent" 
+    }
+    payload = {
+        "model": model_id,
+        "messages": [{"role": "user", "content": prompt}],
+        "stream": True,
+        "max_tokens": 1024, 
+        "temperature": 0.3 
+    }
+     
     ttft, token_count = 0.0, 0
     full_response = ""
 
     try:
         async with httpx.AsyncClient(timeout=60.0) as client:
             async with client.stream("POST", base_url, headers=headers, json=payload) as response:
+                
                 # API KEY error 401
                 if response.status_code == 401:
                     return await call_mock_api(display_name, prompt, is_fallback=True)
                 
+                # 400 ERROR explanation
+                if response.status_code == 400:
+                    error_detail = await response.aread()
+                    return ModelResponse(
+                        model_name=display_name, 
+                        response_text=f"Error d'API 400: El format no és vàlid. Detall del servidor: {error_detail.decode('utf-8')}",
+                        latency=round(time.time() - start_time, 3), ttft=0.0, token_count=0
+                    )
+
                 response.raise_for_status()
+                
                 async for line in response.aiter_lines():
                     if line.startswith("data: ") and line != "data: [DONE]":
-                        data = json.loads(line[6:])
-                        if ttft == 0.0:
-                            ttft = time.time() - start_time
-                        delta = data["choices"][0].get("delta", {}).get("content", "")
-                        if delta:
-                            full_response += delta
-                            token_count += 1
+                        try:
+                            data = json.loads(line[6:])
+                            
+                            if ttft == 0.0:
+                                ttft = time.time() - start_time
+                            
+                            choices = data.get("choices", [])
+                            if choices and isinstance(choices, list) and len(choices) > 0:
+                                delta = choices[0].get("delta", {})
+                                content = delta.get("content", "")
+                                
+                                if content:
+                                    full_response += content
+                                    token_count += 1
+                        except json.JSONDecodeError:
+                            continue
                             
         total_latency = time.time() - start_time
         return ModelResponse(
@@ -147,30 +177,33 @@ async def call_generic_cloud_api(model_id: str, display_name: str, prompt: str, 
             latency=round(time.time() - start_time, 3), ttft=0.0, token_count=0
         )
 
-# -DICTIONARY
+# DICTIONARY OF MODEL ROUTERS
 MODEL_ROUTERS = {
-    # Local
-    "Llama 3 (Local - Meta)": lambda p: call_ollama_model("llama3", "Llama 3 (Local - Meta)", p),
-    "DeepSeek Coder (Local)": lambda p: call_ollama_model("deepseek-coder", "DeepSeek Coder (Local)", p),
-    "DeepSeek LLM (Local - General)": lambda p: call_ollama_model("deepseek-llm", "DeepSeek LLM (Local - General)", p),
+    # 1. LOCAL MODELS (Ollama)
+    "[LOCAL] Llama 3 (Meta)": lambda p: call_ollama_model("llama3", "[LOCAL] Llama 3 (Meta)", p),
+    "[LOCAL] DeepSeek Coder": lambda p: call_ollama_model("deepseek-coder", "[LOCAL] DeepSeek Coder", p),
+    "[LOCAL] DeepSeek LLM": lambda p: call_ollama_model("deepseek-llm", "[LOCAL] DeepSeek LLM", p),
     
-    # Cloud (OpenAI Standard)
-    "ChatGPT-3.5 Turbo (OpenAI)": lambda p: call_generic_cloud_api(
-        "gpt-3.5-turbo", "ChatGPT-3.5 Turbo (OpenAI)", p, "OPENAI_API_KEY", "https://api.openai.com/v1/chat/completions"
+    # 2.PAYMENT CLOUD MODELS (OpenAI, DeepSeek Cloud)
+    "[CLOUD-PRO] ChatGPT-3.5 Turbo (OpenAI)": lambda p: call_generic_cloud_api(
+        "gpt-3.5-turbo", "[CLOUD-PRO] ChatGPT-3.5 Turbo (OpenAI)", p, "OPENAI_API_KEY", "https://api.openai.com/v1/chat/completions"
     ),
-    "ChatGPT-4o (OpenAI)": lambda p: call_generic_cloud_api(
-        "gpt-4o", "ChatGPT-4o (OpenAI)", p, "OPENAI_API_KEY", "https://api.openai.com/v1/chat/completions"
+    "[CLOUD-PRO] DeepSeek (API Oficial)": lambda p: call_generic_cloud_api(
+        "deepseek-chat", "[CLOUD-PRO] DeepSeek (API Oficial)", p, "DEEPSEEK_API_KEY", "https://api.deepseek.com/v1/chat/completions"
     ),
-    "DeepSeek Cloud (API Oficial)": lambda p: call_generic_cloud_api(
-        "deepseek-chat", "DeepSeek Cloud (API Oficial)", p, "DEEPSEEK_API_KEY", "https://api.deepseek.com/v1/chat/completions"
+
+    # 3.FREE CLOUD MODELS (OpenRouter i NVIDIA NIM)
+    "[CLOUD-FREE] Owl Alpha (OpenRouter)": lambda p: call_generic_cloud_api(
+        "openrouter/free", 
+        "[CLOUD-FREE] Owl Alpha (OpenRouter)", p, "OPENROUTER_API_KEY", "https://openrouter.ai/api/v1/chat/completions"
     ),
-    
-    # Mock external models
-    "Claude 3.5 Sonnet (Anthropic)": lambda p: call_mock_api("Claude 3.5 Sonnet (Anthropic)", p),
-    "Gemini 1.5 Pro (Google)": lambda p: call_mock_api("Gemini 1.5 Pro (Google)", p)
+    "[CLOUD-NVIDIA] Llama 3.1 8B (NIM)": lambda p: call_generic_cloud_api(
+        "meta/llama-3.1-8b-instruct", 
+        "[CLOUD-NVIDIA] Llama 3.1 8B (NIM)", p, "NVIDIA_API_KEY", "https://integrate.api.nvidia.com/v1/chat/completions"
+    ),
 }
 
-# -ENDPOINTS
+# ENDPOINTS
 @app.get("/")
 def read_root():
     return {"Status": "ONLINE", "project": "TFG Enginyeria Telecomunicacions - Arquitectura Concurrent"}
@@ -180,11 +213,13 @@ async def generate_response(request: QueryRequest):
     try:
         tasks = []
         for model in request.models:
-            handler = MODEL_ROUTERS.get(model)
+            nom_net = model.strip()
+            
+            handler = MODEL_ROUTERS.get(nom_net)
             if handler:
                 tasks.append(handler(request.prompt))
             else:
-                tasks.append(call_mock_api(model, request.prompt))
+                tasks.append(call_mock_api(nom_net, request.prompt))
 
         results = await asyncio.gather(*tasks)
         return results
