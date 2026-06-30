@@ -4,6 +4,8 @@
 # Note: >= indicates the minimum required version for compatibility.
 # -----------------------------------------------------------------------------
 
+# --- BACKEND (Orchestration) ---
+
 #Modern, fast (high-performance), web framework for building APIs with Python base on standard Python type hints
 fastapi>=0.100.0 
 
@@ -18,3 +20,14 @@ python-dotenv>=1.0.0
 
 #HTTPX is a fully featured HTTP client library for making asynchronous requests to external APIs ([request] will block the server and we need concurrence).
 httpx>=0.24.0 
+
+# --- FRONTEND (Client) ---
+
+# Web framework for creating the interactive UI and telemetry dashboards
+streamlit>=1.30.0
+
+# Powerful data structures for data analysis and charting (used for telemetry history)
+pandas>=2.0.0
+
+# Simple HTTP library for Python (used by Streamlit to query the local FastAPI server)
+requests>=2.31.0
