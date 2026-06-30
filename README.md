@@ -39,6 +39,7 @@ The following diagram illustrates the asynchronous data flow, routing strategies
 * `/backend`: API logic, asynchronous routers, and LLM provider integrations.
 * `/frontend`: Web client code, UI components, and real-time chart visualization.
 * `/docs`: Technical documentation and architecture vector diagrams.
+* **If you are looking for deep technical details** A comprehensive breakdown of the telematic architecture, asynchronous I/O loops, metric derivations, and system topologies can be found in the [Detailed Architecture Documentation (docs/README.md)](./docs/README.md).
 
 ## Getting Started (How to Run)
 
@@ -66,11 +67,13 @@ To evaluate this architecture locally, follow these steps:
    cp .env.example .env
 
 5. **Run the Backend (FastAPI):**
+   ```bash
    cd backend
    uvicorn main:app --reload
 
 6. **Run the Frontend (Streamlit):**
    - Open a new terminal and run.
+   ```bash
    cd frontend
    streamlit run app.py
 
