@@ -67,7 +67,6 @@ with tab1:
     with st.container():
         query = st.text_area("Introdueix la consulta:", placeholder="Ex: Explica'm les Antenes YAGI...", disabled=st.session_state.is_processing or chat_active)
         
-        # CORRECCIÓ APLICADA AQUÍ: Noms per defecte actualitzats amb les noves etiquetes
         selected_models = st.multiselect(
             "Models:", 
             cataleig_models, 
@@ -294,7 +293,7 @@ with tab3:
 
     st.divider()
 
-   # 3. Diagrama de l'arquitectura
+   # 3. Architecture Diagram
     st.markdown("### Diagrama de l'Arquitectura Telemàtica")
     st.caption("Aquest diagrama professional representa el flux de dades asíncron, dividint la infraestructura en topologies locals (Edge) i externes (Cloud) i mostrant com s'extrauen les mètriques telemàtiques.")
     
