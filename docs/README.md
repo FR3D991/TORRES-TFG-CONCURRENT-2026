@@ -27,21 +27,21 @@ To understand the necessity of this architecture, the project resolves a classic
 ### A. The I/O Bound Blocking Problem
 In a traditional synchronous backend (like Flask), when an HTTP request is made to a cloud model, the server's execution thread "freezes" waiting for the provider's response. If the user requests to audit 3 models simultaneously, the total wait time is the linear sum of the latencies:
 
-$$\text{Total\_Latency}=T_{\text{Model\_1}}+T_{\text{Model\_2}}+T_{\text{Model\_3}}$$
+$$\text{Total Latency} = T_{\text{Model 1}} + T_{\text{Model 2}} + T_{\text{Model 3}}$$
 
 This architecture utilizes an **Event-Driven Asynchronous Model (Event Loop)** powered by FastAPI and AsyncIO. Requests are delegated to the operating system in a non-blocking manner. Therefore, the total system time is no longer determined by the sum of the factors, but depends exclusively on the slowest model (the telematic bottleneck):
 
-$$\text{Total\_Latency}=\max(T_{\text{Model\_1}},T_{\text{Model\_2}},T_{\text{Model\_3}})$$
+$$\text{Total Latency} = \max(T_{\text{Model 1}}, T_{\text{Model 2}}, T_{\text{Model 3}})$$
 
 ### B. Performance Metrics in Large Language Networks
 The telematic performance of an Artificial Intelligence model cannot be measured solely by the total time. Three key industrial metrics have been defined:
 
 * **TTFT (Time To First Token):** This is the most critical network metric. It measures the channel propagation time plus the initial server computation time (loading context into the GPU). It is calculated as the difference between the arrival of the first useful text line from the *SSE Stream* and the initial request:
-  $$TTFT=T_{\text{first\_packet}}-T_{\text{request\_sent}}$$
+  $$\text{TTFT} = T_{\text{first packet}} - T_{\text{request sent}}$$
 * **Total Latency:** Total time required to close the stream connection from the original emission:
-  $$\text{Total\_Latency}=T_{\text{connection\_closed}}-T_{\text{request\_sent}}$$
+  $$\text{Total Latency} = T_{\text{connection closed}} - T_{\text{request sent}}$$
 * **Throughput (Tokens per second):** Net transmission speed of the artificial intelligence's useful information payload, calculated by dividing the processed packet (token) count by the net generation time:
-  $$\text{Throughput}=\frac{\text{Total\_Payload\_(Tokens)}}{\text{Total\_Latency}-TTFT}$$
+  $$\text{Throughput} = \frac{\text{Total Payload (Tokens)}}{\text{Total Latency} - \text{TTFT}}$$
 
 ---
 
