@@ -5,10 +5,10 @@ import pandas as pd
 import time
 
 # FRONTEND configuration
-st.set_page_config(page_title="TFG: Sistema d'Auditoria Telemàtica LLMs", layout="wide")
+st.set_page_config(page_title="TFG: Sistema d'Avaluació Telemàtica LLMs", layout="wide")
 
-st.title("Creació d'una arquitectura web per fer consultes concurrents a ChatGpt, DeepSeek i LlaMa")
-st.subheader("Plataforma de Monitorització: Auditoria Concurrent i Mode Explotació")
+st.title("Creació d'una arquitectura web per fer consultes concurrents a la família GPT, DeepSeek i LlaMa")
+st.subheader("Plataforma de Monitorització: Avaluació Concurrent i Mode Explotació")
 
 # SESSION STATE
 if "messages" not in st.session_state:
