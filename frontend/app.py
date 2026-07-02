@@ -62,7 +62,7 @@ with tab1:
     if chat_active:
         st.error("**Bloqueig per Seguretat (Prevenció OOM):** Out Of Memory. Hi ha un xat actiu a la Fase 2. Reinicia la sessió i neteja la memòria per poder fer nous Benchmarks.")
     else:
-        st.caption("Realitzem auditoria concurrent a diferents models depenent si es tracta d'una versió local o en núvol.")
+        st.caption("Realitzem avaluació concurrent a diferents models depenent si es tracta d'una versió local o en núvol.")
     
     with st.container():
         query = st.text_area("Introdueix la consulta:", placeholder="Ex: Explica'm les Antenes YAGI...", disabled=st.session_state.is_processing or chat_active)
@@ -372,6 +372,7 @@ with tab3:
     Mitjançant la detecció de patrons recurrents (*Time To Live* de 12 hores), l'arquitectura intercepta consultes idèntiques. Quan s'identifica una redundància, el sistema denega la petició externa i retorna els resultats des de la memòria RAM local. Aquest *Zero-Compute Response* suposa un estalvi del 100% en ample de banda i consum computacional.
     """)
     
+    # 7. Future Work and Scalability
     with st.expander("Línies futures d'investigació i escalabilitat"):
         st.markdown("""
         L'arquitectura actual estableix una base sòlida per a la inferència de text, però el seu disseny modular permet plantejar les següents evolucions tecnològiques:

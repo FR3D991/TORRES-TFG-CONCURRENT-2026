@@ -15,17 +15,18 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = FastAPI(
-    title="Creació d'una arquitectura web per fer consultes concurrents a ChatGpt, DeepSeek i LlaMa",
-    description="Backend asíncron per medició mètriques a diferents LLMs",
+    title="Creació d'una arquitectura web per fer consultes concurrents a la Fanília GPT (OpenAI), DeepSeek i LlaMa",
+    description="Backend asíncron per a la medició de mètriques de xarxa i TTFT en consultes a models LLM Locals i Cloud (Ollama, OpenAI, DeepSeek, OpenRouter, NVIDIA NIM).",
     version="3.1.1"
 )
 
-app.add_middleware(
+# CORS MIDDLEWARE CONFIGURATION
+app.add_middleware( 
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=["*"], 
+    allow_credentials=True, 
+    allow_methods=["*"], 
+    allow_headers=["*"], 
 )
 
 # REQUEST/RESPONSE MODELS
@@ -121,7 +122,7 @@ async def call_generic_cloud_api(model_id: str, display_name: str, prompt: str, 
         "model": model_id,
         "messages": [{"role": "user", "content": prompt}],
         "stream": True,
-        "max_tokens": 1024, 
+        "max_tokens": 4096, 
         "temperature": 0.3 
     }
      
