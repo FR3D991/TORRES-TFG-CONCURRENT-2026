@@ -49,7 +49,7 @@ cataleig_models = [
 
 # 3 tabs for the interface
 tab1, tab2, tab3 = st.tabs([
-    "Fase 1: Auditoria Concurrent", 
+    "Fase 1: Avaluació Concurrent", 
     "Fase 2: Mode Explotació", 
     "Fase 3: Documentació i Arquitectura"
 ])
